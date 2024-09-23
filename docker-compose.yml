@@ -1,0 +1,39 @@
+version: '3.8'
+services:
+  app:
+    build: .
+    container_name: nestjs_app
+    restart: always
+    env_file: .env
+    ports:
+      - '3000:3000'
+    depends_on:
+      - mongo
+      - redis
+    volumes:
+      - ./:/app
+    command: npm run start:dev
+    environment:
+      MONGODB_URI: mongodb://mongo:27017/tracking
+      REDIS_HOST: redis
+      TWEET_HASHTAG: ada
+
+  mongo:
+    image: mongo:latest
+    container_name: mongo
+    restart: always
+    ports:
+      - '27017:27017'
+    volumes:
+      - ./.tmp/db:/data/db
+      - ./init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
+
+  redis:
+    image: redis:latest
+    container_name: redis
+    restart: always
+    ports:
+      - '6379:6379'
+    volumes:
+      - ./.tmp/redis:/data
+    command: ["redis-server", "--appendonly", "yes"]
